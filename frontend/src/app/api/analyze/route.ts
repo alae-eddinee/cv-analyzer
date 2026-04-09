@@ -9,11 +9,9 @@ async function extractText(file: File): Promise<string> {
   const name = file.name.toLowerCase();
 
   if (name.endsWith(".pdf")) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { PDFParse } = await import("pdf-parse") as any;
-    const parser = new PDFParse({ data: buffer });
-    const result = await parser.getText();
-    return result.pages.map((p: { text: string }) => p.text).join("\n");
+    const { extractText } = await import("unpdf");
+    const result = await extractText(buffer);
+    return result.text.join("\n");
   }
 
   if (name.endsWith(".docx")) {
