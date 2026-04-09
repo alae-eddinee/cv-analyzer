@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
 
+export const runtime = "nodejs";
+
 const MODEL = "openrouter/auto";
 
 async function extractText(file: File): Promise<string> {
