@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Dark background circle -->
+  <rect width="32" height="32" rx="8" fill="#0d0f14"/>
+  <!-- Document body -->
+  <rect x="7" y="5" width="14" height="18" rx="2" fill="#1e2535" stroke="#3b82f6" stroke-width="1.2"/>
+  <!-- Document lines -->
+  <line x1="10" y1="10" x2="18" y2="10" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="10" y1="13" x2="18" y2="13" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="10" y1="16" x2="15" y2="16" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round"/>
+  <!-- Sparkle / score indicator top-right -->
+  <circle cx="22" cy="10" r="6" fill="#0d0f14"/>
+  <path d="M22 6 L22.8 9.2 L26 10 L22.8 10.8 L22 14 L21.2 10.8 L18 10 L21.2 9.2 Z" fill="#3b82f6"/>
+</svg>

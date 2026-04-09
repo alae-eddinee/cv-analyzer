@@ -1,0 +1,16 @@
+# Environment variables — never commit
+.env
+.env.*
+.env.local
+frontend/.env
+frontend/.env.*
+frontend/.env.local
+
+# Next.js
+frontend/.next/
+frontend/node_modules/
+frontend/tsconfig.tsbuildinfo
+
+# OS
+.DS_Store
+Thumbs.db
