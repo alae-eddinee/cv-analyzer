@@ -1,16 +1,24 @@
 "use client";
 
-import { useRef, useState, useMemo, DragEvent, ChangeEvent } from "react";
+import { useRef, useState, useMemo, useEffect, DragEvent, ChangeEvent } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Upload, FileText, X, Loader2, RotateCcw, AlertTriangle, BrainCircuit, Lightbulb } from "lucide-react";
+import { Upload, FileText, X, RotateCcw, AlertTriangle, BrainCircuit, Lightbulb } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
 type Stage = "idle" | "loading" | "done" | "error";
+
+const LOADING_STEPS = [
+  { label: "Reading your CV…",      pct: 15 },
+  { label: "Sending to AI…",        pct: 35 },
+  { label: "Analyzing match…",      pct: 60 },
+  { label: "Generating insights…",  pct: 85 },
+];
+const STEP_DELAYS = [0, 1500, 3500, 6500]; // ms after analyze() starts
 
 // ── Easing ────────────────────────────────────────────────────────────────
 
@@ -106,8 +114,11 @@ export default function Home() {
   const [rawText, setRawText] = useState("");
   const [error, setError]     = useState("");
 
+  const [loadingStep, setLoadingStep] = useState(0);
+
   const fileInputRef  = useRef<HTMLInputElement>(null);
   const abortRef      = useRef<AbortController | null>(null);
+  const stepTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   // Ref-based drag tracking avoids 50-100 re-renders/s from dragover events
   const dragCountRef  = useRef(0);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -118,6 +129,23 @@ export default function Home() {
 
   const canAnalyze = file !== null && jobDesc.trim().length > 10;
   const isAnalyzing = stage === "loading" || stage === "done";
+
+  // Advance loading steps on timers; clear when done
+  useEffect(() => {
+    if (stage !== "loading") {
+      stepTimersRef.current.forEach(clearTimeout);
+      stepTimersRef.current = [];
+      return;
+    }
+    setLoadingStep(0);
+    stepTimersRef.current = STEP_DELAYS.slice(1).map((delay, i) =>
+      setTimeout(() => setLoadingStep(i + 1), delay)
+    );
+    return () => {
+      stepTimersRef.current.forEach(clearTimeout);
+      stepTimersRef.current = [];
+    };
+  }, [stage]);
 
   // ── File handling ──────────────────────────────────────────────────────
 
@@ -475,13 +503,45 @@ export default function Home() {
                 </motion.div>
               )}
 
-              {/* Spinner — waiting for first token */}
+              {/* Progress bar — waiting for first token */}
               {stage === "loading" && !rawText && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="flex flex-col items-center gap-4 py-20">
-                  <Loader2 className="size-8 animate-spin text-primary/60" />
-                  <p className="text-sm text-muted-foreground">Analyzing your CV…</p>
+                  className="py-16 flex flex-col items-center gap-6">
+                  <div className="w-full max-w-sm space-y-3">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <motion.span
+                        key={loadingStep}
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25 }}>
+                        {LOADING_STEPS[loadingStep].label}
+                      </motion.span>
+                      <motion.span
+                        key={`pct-${loadingStep}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.25 }}>
+                        {LOADING_STEPS[loadingStep].pct}%
+                      </motion.span>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.07]">
+                      <motion.div
+                        className="h-full rounded-full bg-primary"
+                        style={{ filter: "drop-shadow(0 0 6px oklch(0.5 0.15 260 / 0.6))" }}
+                        animate={{ width: `${LOADING_STEPS[loadingStep].pct}%` }}
+                        transition={{ duration: 0.7, ease: easeOut }}
+                      />
+                    </div>
+                    <div className="flex justify-between">
+                      {LOADING_STEPS.map((s, i) => (
+                        <div key={i} className={[
+                          "h-1 w-1 rounded-full transition-colors duration-300",
+                          i <= loadingStep ? "bg-primary" : "bg-white/10",
+                        ].join(" ")} />
+                      ))}
+                    </div>
+                  </div>
                 </motion.div>
               )}
 
