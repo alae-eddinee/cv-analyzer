@@ -10,7 +10,7 @@ async function extractText(file: File): Promise<string> {
 
   if (name.endsWith(".pdf")) {
     const { extractText } = await import("unpdf");
-    const result = await extractText(buffer);
+    const result = await extractText(new Uint8Array(buffer));
     return result.text.join("\n");
   }
 
